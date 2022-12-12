@@ -18,10 +18,10 @@ namespace WindowsGSM.Plugins
         public Plugin Plugin = new Plugin
         {
             name = "WindowsGSM.Valheim", // WindowsGSM.XXXX
-            author = "kessef",
-            description = "WindowsGSM plugin for supporting Valheim Dedicated Server",
-            version = "1.6",
-            url = "https://github.com/dkdue/WindowsGSM.Valheim", // Github repository link (Best practice)
+            author = "PsymoN",
+            description = "A Fork of kessef WindowsGSM plugin version for supporting Valheim Dedicated Server",
+            version = "1.6.1",
+            url = "https://github.com/diegovsantos/WindowsGSM.Valheim", // Github repository link (Best practice)
             color = "#34c9eb" // Color Hex
         };
 
@@ -48,7 +48,7 @@ namespace WindowsGSM.Plugins
         public string QueryPort = "2457"; // Default query port
         public string Defaultmap = "Dedicated"; // Default map name
         public string Maxplayers = "10"; // Default maxplayers
-        public string Additional = "-name Server_Name -port 2456 -world WorldName -password Secret -savedir c:\valheim -Public 1"; // Additional server start parameter
+        public string Additional = "-password \"CHANGE_ME\" -savedir \"c:\valheim\" -Public 1"; // Additional server start parameter
 
 
         // - Create a default cfg for the game server after installation
@@ -60,21 +60,21 @@ namespace WindowsGSM.Plugins
         // - Start server function, return its Process to WindowsGSM
         public async Task<Process> Start()
         {
-			
+
             string shipExePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
             if (!File.Exists(shipExePath))
             {
                 Error = $"{Path.GetFileName(shipExePath)} not found ({shipExePath})";
                 return null;
-            }			
-			
-		
+            }
 
             // Prepare start parameter
-
-			string param = $"-batchmode -nographics {_serverData.ServerParam}" + (!AllowsEmbedConsole ? " -log" : string.Empty);	
-	
-
+            var param = new StringBuilder();
+            param.Append("-batchmode -nographics -crossplay");
+            param.Append(string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -port {_serverData.ServerPort}");
+            param.Append(string.IsNullOrWhiteSpace(_serverData.ServerName) ? string.Empty : $" -name \"{_serverData.ServerName}\"");
+            param.Append(string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $" -world \"{_serverData.ServerMap}\"");
+            param.Append(string.IsNullOrWhiteSpace(_serverData.ServerParam) ? string.Empty : $" {_serverData.ServerParam}");
 
             // Prepare Process
             var p = new Process
