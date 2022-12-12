@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using WindowsGSM.Functions;
@@ -83,7 +84,7 @@ namespace WindowsGSM.Plugins
                 {
                     WorkingDirectory = ServerPath.GetServersServerFiles(_serverData.ServerID),
                     FileName = shipExePath,
-                    Arguments = param,
+                    Arguments = param.ToString(),
                     WindowStyle = ProcessWindowStyle.Minimized,
                     UseShellExecute = false
                 },
