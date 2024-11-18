@@ -4,6 +4,10 @@
 # The Game
 https://store.steampowered.com/app/892970/Valheim/
 
+# Notes
+- Moved default save game location to inside the serverfiles, as c/valheim is stupid :D
+- if you want to change that, adjust it by clicking Edit Config in WGSM and modify the savedir parameter in Server Start Param
+
 # Requirements
 WindowsGSM >= 1.21.0
 
