@@ -49,7 +49,7 @@ namespace WindowsGSM.Plugins
         public string QueryPort = "2457"; // Default query port
         public string Defaultmap = "Dedicated"; // Default map name
         public string Maxplayers = "10"; // Default maxplayers
-        public string Additional = "-password \"CHANGE_ME\" -savedir \"c:\valheim\" -Public 1"; // Additional server start parameter
+        public string Additional = "-password \"CHANGE_ME\" -savedir \"valheim\" -Public 1"; // Additional server start parameter
 
 
         // - Create a default cfg for the game server after installation
