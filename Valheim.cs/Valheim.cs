@@ -19,10 +19,10 @@ namespace WindowsGSM.Plugins
         public Plugin Plugin = new Plugin
         {
             name = "WindowsGSM.Valheim", // WindowsGSM.XXXX
-            author = "PsymoN",
+            author = "raziel7893",
             description = "A Fork of kessef WindowsGSM plugin version for supporting Valheim Dedicated Server",
-            version = "1.6.1",
-            url = "https://github.com/diegovsantos/WindowsGSM.Valheim", // Github repository link (Best practice)
+            version = "1.7.0",
+            url = "https://github.com/Raziel7893/WindowsGSM.valheim", // https://github.com/diegovsantos/WindowsGSM.Valheim (original creator)
             color = "#34c9eb" // Color Hex
         };
 
