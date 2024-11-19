@@ -35,5 +35,12 @@ For now the server works with a password, you have to put 5 numbers or 5 letters
   2. Move Valheim.cs folder to plugins folder
   3. Click [RELOAD PLUGINS] button or restart WindowsGSM
 
+### Support
+[WGSM](https://discord.com/channels/590590698907107340/645730252672335893)
+
+### Give Love!
+[Buy me a coffee](https://ko-fi.com/raziel7893)
+
+[Paypal](https://paypal.me/raziel7893)
 # License
 This project is licensed under the MIT License - see the <a href="https://github.com/dkdue/WindowsGSM.Valheim/blob/main/LICENSE">LICENSE.md</a> file for details
