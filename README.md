@@ -31,9 +31,9 @@ For now the server works with a password, you have to put 5 numbers or 5 letters
 *-WindowsGSM.Valheim not compatible with Umod or other mods, for now
 
 # Installation
-  1. Download the latest release
-  2. Move Valheim.cs folder to plugins folder
-  3. Click [RELOAD PLUGINS] button or restart WindowsGSM
+  1. Download the latest release (or click Code => download zip)
+  3. Move Valheim.cs folder to plugins folder
+  4. Click [RELOAD PLUGINS] button or restart WindowsGSM
 
 ### Support
 [WGSM](https://discord.com/channels/590590698907107340/645730252672335893)
