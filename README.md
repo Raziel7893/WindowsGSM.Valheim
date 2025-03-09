@@ -28,7 +28,7 @@ Edit in Edit Config (click "Edit Config" button, look in the last box "Server St
 # Important
 For now the server works with a password, you have to put 5 numbers or 5 letters minimum, it is mandatory !!!
 
-*-WindowsGSM.Valheim not compatible with Umod or other mods, for now
+*-WindowsGSM.Valheim not compatible with Umod or other mods, for now (not sure if true, the most part of the readme is taken from the fork origin)
 
 # Installation
   1. Download the latest release (or click Code => download zip)
