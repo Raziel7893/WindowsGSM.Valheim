@@ -15,7 +15,7 @@ WindowsGSM >= 1.21.0
 The administrator files are located in the host folder C:\Users\YORNAME\AppData\LocalLow\IronGate\Valheim\
 
 # Config
-Edit in Edit Config, see the <a href="https://cdn.discordapp.com/attachments/800673503966789682/810663350102261760/unknown.png">Image</a> for details
+Edit in Edit Config (click "Edit Config" button, look in the last box "Server Start Param")
 
 -name "CHANGEME" -port 2456 -world "CHANGEME" -password "CHANGEME" -savedir "c:\directory where you want to save" -Public 1
 
