@@ -1,28 +1,37 @@
 ﻿using System;
-using System.Text;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using WindowsGSM.Functions;
-using WindowsGSM.GameServer.Query;
 using WindowsGSM.GameServer.Engine;
-using System.IO;
-using System.Linq;
-using System.Net;
-
+using WindowsGSM.GameServer.Query;
 
 
 namespace WindowsGSM.Plugins
 {
     public class Valheim : SteamCMDAgent
     {
+        internal const int CTRL_C_EVENT = 0;
+        [DllImport("kernel32.dll")]
+        internal static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern bool AttachConsole(uint dwProcessId);
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        internal static extern bool FreeConsole();
+        [DllImport("kernel32.dll")]
+        static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate HandlerRoutine, bool Add); 
+        delegate Boolean ConsoleCtrlDelegate(uint CtrlType);
+
         // - Plugin Details
         public Plugin Plugin = new Plugin
         {
             name = "WindowsGSM.Valheim", // WindowsGSM.XXXX
-            author = "raziel7893",
+            author = "PsymoN",
             description = "A Fork of kessef WindowsGSM plugin version for supporting Valheim Dedicated Server",
-            version = "1.7.0",
-            url = "https://github.com/Raziel7893/WindowsGSM.valheim", // https://github.com/diegovsantos/WindowsGSM.Valheim (original creator)
+            version = "1.6.1",
+            url = "https://github.com/diegovsantos/WindowsGSM.Valheim", // Github repository link (Best practice)
             color = "#34c9eb" // Color Hex
         };
 
@@ -131,17 +140,36 @@ namespace WindowsGSM.Plugins
             }
         }
 
-
-// - Stop server function
+        // - Stop server function
         public async Task Stop(Process p)
         {
             await Task.Run(() =>
             {
-                 Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                 Functions.ServerConsole.SendWaitToMainWindow("^c");
+                if (AttachConsole((uint)p.Id))
+                {
+                    SetConsoleCtrlHandler(null, true);
+                    try
+                    {
+                        if (!GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0))
+                            return;
+                        p.WaitForExit(10000);
+                    }
+                    finally
+                    {
+                        SetConsoleCtrlHandler(null, false);
+                        FreeConsole();
+                    }
+                    return;
+                }
             });
-			 await Task.Delay(20000);
         }
 
+        public async Task<Process> Update(bool validate = false, string custom = null)
+        {
+            var (p, error) = await Installer.SteamCMD.UpdateEx(serverData.ServerID, AppId, validate, custom: custom, loginAnonymous: loginAnonymous);
+            Error = error;
+            await Task.Run(() => { p.WaitForExit(); });
+            return p;
+        }
     }
 }
