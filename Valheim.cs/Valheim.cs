@@ -56,9 +56,25 @@ namespace WindowsGSM.Plugins
         public string QueryPort = "2457"; // Default query port
         public string Defaultmap = "Dedicated"; // Default map name
         public string Maxplayers = "10"; // Default maxplayers
-        public string Additional = "-password \"CHANGE_ME\" -savedir \"c:\valheim\" -Public 1"; // Additional server start parameter
+        private string BaseServerPath => Functions.ServerPath.GetServersServerFiles(serverData.ServerID, "");
+        public string Additional => $"-password \"{RandomPassword}\" -savedir \"{BaseServerPath}\\savedir\" -crossplay -public 1"; // Additional server start parameter
 
+        //Create random password
+        static string PasswordGenerator()
+        {
+            Random res = new Random();
+            String str = "abcdefghijklmnopqrstuvwxyz0123456789";
+            int size = 8;
+            String randomstring = "";
+            for (int i = 0; i < size; i++)
+            {
+                int x = res.Next(str.Length);
+                randomstring = randomstring + str[x];
+            }
+            return randomstring;
+        }
 
+        private string RandomPassword => PasswordGenerator();
         // - Create a default cfg for the game server after installation
         public async void CreateServerCFG()
         {
@@ -78,7 +94,7 @@ namespace WindowsGSM.Plugins
 
             // Prepare start parameter
             var param = new StringBuilder();
-            param.Append("-batchmode -nographics -crossplay");
+            param.Append("-batchmode -nographics");
             param.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? string.Empty : $" -port {serverData.ServerPort}");
             param.Append(string.IsNullOrWhiteSpace(serverData.ServerName) ? string.Empty : $" -name \"{serverData.ServerName}\"");
             param.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? string.Empty : $" -world \"{serverData.ServerMap}\"");
@@ -99,7 +115,7 @@ namespace WindowsGSM.Plugins
             };
 
             // Set up Redirect Input and Output to WindowsGSM Console if EmbedConsole is on
-            if (AllowsEmbedConsole)
+            if (serverData.EmbedConsole)
             {
                 p.StartInfo.CreateNoWindow = true;
                 p.StartInfo.RedirectStandardInput = true;
@@ -150,13 +166,18 @@ namespace WindowsGSM.Plugins
                     {
                         if (!GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0))
                             return;
-                        p.WaitForExit(10000);
+                        if (p.WaitForExit(30000)) // Wait 30 seconds
+                        {
+                            return; // Exited gracefully
+                        }
                     }
                     finally
                     {
                         SetConsoleCtrlHandler(null, false);
                         FreeConsole();
                     }
+                    // could not exit gracefully, kill the process
+                    p.Kill();
                     return;
                 }
             });
