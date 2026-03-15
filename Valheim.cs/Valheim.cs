@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using WindowsGSM.Functions;
 using WindowsGSM.GameServer.Engine;
 using WindowsGSM.GameServer.Query;
+
 
 
 namespace WindowsGSM.Plugins
@@ -24,6 +25,8 @@ namespace WindowsGSM.Plugins
         static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate HandlerRoutine, bool Add); 
         delegate Boolean ConsoleCtrlDelegate(uint CtrlType);
 
+
+
         // - Plugin Details
         public Plugin Plugin = new Plugin
         {
@@ -40,7 +43,9 @@ namespace WindowsGSM.Plugins
         public override string AppId => "896660"; // Game server appId
 
         // - Standard Constructor and properties
-        public Valheim(ServerConfig serverData) : base(serverData) => base.serverData = serverData;
+        public Valheim(ServerConfig serverData) : base(serverData) => base.serverData = _serverData = serverData;
+        private readonly ServerConfig _serverData;
+        public string Error, Notice;
 
 
         // - Game server Fixed variables
@@ -50,14 +55,29 @@ namespace WindowsGSM.Plugins
         public int PortIncrements = 10; // This tells WindowsGSM how many ports should skip after installation
         public object QueryMethod = new A2S(); // Query method should be use on current server type. Accepted value: null or new A2S() or new FIVEM() or new UT3()
 
-
-        // - Game server default values
+		//Create random password
+		static string PasswordGenerator()
+		{
+			Random res = new Random();
+			String str = "abcdefghijklmnopqrstuvwxyz0123456789";
+			int size = 8;
+			String randomstring = "";
+			for (int i = 0; i < size; i++)
+			{
+				int x = res.Next(str.Length);
+				randomstring = randomstring + str[x];
+			}
+			return randomstring;
+		}
+        private string RandomPassword => PasswordGenerator();
+		
+		// - Game server default values
         public string Port = "2456"; // Default port
         public string QueryPort = "2457"; // Default query port
         public string Defaultmap = "Dedicated"; // Default map name
         public string Maxplayers = "10"; // Default maxplayers
-        public string Additional = "-password \"CHANGE_ME\" -savedir \"c:\valheim\" -Public 1"; // Additional server start parameter
-
+		private string BaseServerPath => Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "");
+        public string Additional => $"-password \"{RandomPassword}\" -savedir \"{BaseServerPath}\\savedir\" -crossplay -public 1"; // Additional server start parameter
 
         // - Create a default cfg for the game server after installation
         public async void CreateServerCFG()
@@ -69,7 +89,7 @@ namespace WindowsGSM.Plugins
         public async Task<Process> Start()
         {
 
-            string shipExePath = Functions.ServerPath.GetServersServerFiles(serverData.ServerID, StartPath);
+            string shipExePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
             if (!File.Exists(shipExePath))
             {
                 Error = $"{Path.GetFileName(shipExePath)} not found ({shipExePath})";
@@ -78,18 +98,18 @@ namespace WindowsGSM.Plugins
 
             // Prepare start parameter
             var param = new StringBuilder();
-            param.Append("-batchmode -nographics -crossplay");
-            param.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? string.Empty : $" -port {serverData.ServerPort}");
-            param.Append(string.IsNullOrWhiteSpace(serverData.ServerName) ? string.Empty : $" -name \"{serverData.ServerName}\"");
-            param.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? string.Empty : $" -world \"{serverData.ServerMap}\"");
-            param.Append(string.IsNullOrWhiteSpace(serverData.ServerParam) ? string.Empty : $" {serverData.ServerParam}");
+            param.Append("-batchmode -nographics"); //mandatory for silent working within WinGSM
+            param.Append(string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -port {_serverData.ServerPort}");
+            param.Append(string.IsNullOrWhiteSpace(_serverData.ServerName) ? string.Empty : $" -name \"{_serverData.ServerName}\"");
+            param.Append(string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $" -world \"{_serverData.ServerMap}\"");
+            param.Append(string.IsNullOrWhiteSpace(_serverData.ServerParam) ? string.Empty : $" {_serverData.ServerParam}");
 
             // Prepare Process
             var p = new Process
             {
                 StartInfo =
                 {
-                    WorkingDirectory = ServerPath.GetServersServerFiles(serverData.ServerID),
+                    WorkingDirectory = ServerPath.GetServersServerFiles(_serverData.ServerID),
                     FileName = shipExePath,
                     Arguments = param.ToString(),
                     WindowStyle = ProcessWindowStyle.Minimized,
@@ -105,7 +125,7 @@ namespace WindowsGSM.Plugins
                 p.StartInfo.RedirectStandardInput = true;
                 p.StartInfo.RedirectStandardOutput = true;
                 p.StartInfo.RedirectStandardError = true;
-                var serverConsole = new ServerConsole(serverData.ServerID);
+                var serverConsole = new ServerConsole(_serverData.ServerID);
                 p.OutputDataReceived += serverConsole.AddOutput;
                 p.ErrorDataReceived += serverConsole.AddOutput;
 
@@ -150,7 +170,10 @@ namespace WindowsGSM.Plugins
                     {
                         if (!GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0))
                             return;
-                        p.WaitForExit(10000);
+                        if (p.WaitForExit(30000)) // Wait 30 seconds
+						{
+							return; // Exited gracefully
+						} 
                     }
                     finally
                     {
